@@ -9,4 +9,5 @@ spec:
   ports:
   - port: {{ .Values.frontend.port }}
     targetPort: {{ .Values.frontend.port }}
-  type: LoadBalancer
+    nodePort: {{ .Values.frontend.nodePort }}
+  type: NodePort
