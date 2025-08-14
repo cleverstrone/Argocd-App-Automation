@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.frontend.replicas }}
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      initContainers:
+      - name: wait-for-backend
+        image: busybox:1.36
+        command: [ 'sh', '-c', 'until wget -qO- http://backend:{{ .Values.backend.port }}/health; do echo "Waiting for backend..."; sleep 2; done' ]
+      containers:
+      - name: frontend
+        image: {{ .Values.frontend.image }}
+        ports:
+        - containerPort: {{ .Values.frontend.port }}
+        env:
+        - name: BACKEND_APP_API_URL
+          value: {{ .Values.frontend.backend_app }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.backend.port }}
